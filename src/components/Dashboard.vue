@@ -6,37 +6,27 @@
                     <h5>{{ userProfile.name }}</h5>
                     <p>{{ userProfile.title }}</p>
                     <div class="create-post">
-                        <p>create a post</p>
+                        <p>create a habit</p>
                         <form @submit.prevent>
-                            <textarea v-model.trim="post.content"></textarea>
-                            <button @click="createPost" :disabled="post.content == ''" class="button">post</button>
+                            <textarea v-model.trim="habit.description"></textarea>
+                            <button @click="createHabit" :disabled="habit.description == ''" class="button">Add</button>
                         </form>
                     </div>
                 </div>
             </div>
             <div class="col2">
-                <transition name="fade">
-                    <div v-if="hiddenPosts.length" @click="showNewPosts" class="hidden-posts">
-                        <p>
-                            Click to show <span class="new-posts">{{ hiddenPosts.length }}</span>
-                            new <span v-if="hiddenPosts.length > 1">posts</span><span v-else>post</span>
-                        </p>
-                    </div>
-                </transition>
-                <div v-if="posts.length">
-                    <div v-for="post in posts" :key="post.id" class="post">
-                        <h5>{{ post.userName }}</h5>
-                        <span>{{ post.createdOn | formatDate }}</span>
-                        <p>{{ post.content | trimLength }}</p>
+                <div v-if="habits.length">
+                    <div v-for="habit in habits" :key="habit.id" class="post">
+                        <span>{{ habit.createdOn | formatDate }}</span>
+                        <p>{{ habit.description | trimLength }}</p>
                         <ul>
-                            <li><a @click="openCommentModal(post)">comments {{ post.comments }}</a></li>
-                            <li><a @click="likePost(post.id, post.likes)">likes {{ post.likes }}</a></li>
-                            <li><a @click="viewPost(post)">view full post</a></li>
+                            <li><a @click="openCommentModal(habit)">comments {{ habit.comments }}</a></li>
+                            <li><a @click="viewHabit(habit)">view full habit</a></li>
                         </ul>
                     </div>
                 </div>
                 <div v-else>
-                    <p class="no-results">There are currently no posts</p>
+                    <p class="no-results">There are currently no habits</p>
                 </div>
             </div>
         </section>
@@ -55,22 +45,21 @@
             </div>
         </transition>
 
-        <!-- post modal -->
+        <!-- habit modal -->
         <transition name="fade">
-            <div v-if="showPostModal" class="p-modal">
+            <div v-if="showHabitModal" class="p-modal">
                 <div class="p-container">
-                    <a @click="closePostModal" class="close">X</a>
+                    <a @click="closeHabitModal" class="close">X</a>
                     <div class="post">
-                        <h5>{{ fullPost.userName }}</h5>
-                        <span>{{ fullPost.createdOn | formatDate }}</span>
-                        <p>{{ fullPost.content }}</p>
+                        <h5>{{ fullHabit.userName }}</h5>
+                        <span>{{ fullHabit.createdOn | formatDate }}</span>
+                        <p>{{ fullHabit.description }}</p>
                         <ul>
-                            <li><a>comments {{ fullPost.comments }}</a></li>
-                            <li><a>likes {{ fullPost.likes }}</a></li>
+                            <li><a>comments {{ fullHabit.comments }}</a></li>
                         </ul>
                     </div>
-                    <div v-show="postComments.length" class="comments">
-                        <div v-for="comment in postComments" :key="comment.id" class="comment">
+                    <div v-show="habitComments.length" class="comments">
+                        <div v-for="comment in habitComments" :key="comment.id" class="comment">
                             <p>{{ comment.userName }}</p>
                             <span>{{ comment.createdOn | formatDate }}</span>
                             <p>{{ comment.content }}</p>
@@ -90,70 +79,62 @@
     export default {
         data() {
             return {
-                post: {
-                    content: ''
+                habit: {
+                    description: ''
                 },
                 comment: {
-                    postId: '',
+                    habitId: '',
                     userId: '',
                     content: '',
-                    postComments: 0
+                    habitComments: 0
                 },
                 showCommentModal: false,
-                showPostModal: false,
-                fullPost: {},
-                postComments: []
+                showHabitModal: false,
+                fullHabit: {},
+                habitComments: []
             }
         },
         computed: {
-            ...mapState(['userProfile', 'currentUser', 'posts', 'hiddenPosts'])
+            ...mapState(['userProfile', 'currentUser', 'habits'])
         },
         methods: {
-            createPost() {
-                fb.postsCollection.add({
+            createHabit() {
+                fb.habitsCollection.add({
                     createdOn: new Date(),
-                    content: this.post.content,
+                    description: this.habit.description,
                     userId: this.currentUser.uid,
-                    userName: this.userProfile.name,
                     comments: 0,
-                    likes: 0
                 }).then(ref => {
-                    this.post.content = ''
+                    this.habit.description = ''
                 }).catch(err => {
                     console.log(err)
                 })
             },
-            showNewPosts() {
-                let updatedPostsArray = this.hiddenPosts.concat(this.posts)
-                // clear hiddenPosts array and update posts array
-                this.$store.commit('setHiddenPosts', null)
-                this.$store.commit('setPosts', updatedPostsArray)
-            },
-            openCommentModal(post) {
-                this.comment.postId = post.id
-                this.comment.userId = post.userId
-                this.comment.postComments = post.comments
+            openCommentModal(habit) {
+                this.comment.habitId = habit.id
+                this.comment.userId = habit.userId
+                this.comment.habitComments = habit.comments
                 this.showCommentModal = true
             },
             closeCommentModal() {
-                this.comment.postId = ''
+                this.comment.habitId = ''
                 this.comment.userId = ''
                 this.comment.content = ''
                 this.showCommentModal = false
             },
             addComment() {
-                let postId = this.comment.postId
-                let postComments = this.comment.postComments
+                let habitId = this.comment.habitId
+                let habitComments = this.comment.habitComments
 
                 fb.commentsCollection.add({
                     createdOn: new Date(),
                     content: this.comment.content,
-                    postId: postId,
+                    habitId: habitId,
                     userId: this.currentUser.uid,
                     userName: this.userProfile.name
                 }).then(doc => {
-                    fb.postsCollection.doc(postId).update({
-                        comments: postComments + 1
+                    fb.habitsCollection.doc(habitId).update({
+                        comments: habitComments + 1
                     }).then(() => {
                         this.closeCommentModal()
                     })
@@ -161,27 +142,8 @@
                     console.log(err)
                 })
             },
-            likePost(postId, postLikes) {
-                let docId = `${this.currentUser.uid}_${postId}`
-
-                fb.likesCollection.doc(docId).get().then(doc => {
-                    if (doc.exists) { return }
-
-                    fb.likesCollection.doc(docId).set({
-                        postId: postId,
-                        userId: this.currentUser.uid
-                    }).then(() => {
-                        // update post likes
-                        fb.postsCollection.doc(postId).update({
-                            likes: postLikes + 1
-                        })
-                    })
-                }).catch(err => {
-                    console.log(err)
-                })
-            },
-            viewPost(post) {
-                fb.commentsCollection.where('postId', '==', post.id).get().then(docs => {
+            viewHabit(habit) {
+                fb.commentsCollection.where('habitId', '==', habit.id).get().then(docs => {
                     let commentsArray = []
 
                     docs.forEach(doc => {
@@ -190,16 +152,16 @@
                         commentsArray.push(comment)
                     })
 
-                    this.postComments = commentsArray
-                    this.fullPost = post
-                    this.showPostModal = true
+                    this.habitComments = commentsArray
+                    this.fullHabit = habit
+                    this.showHabitModal = true
                 }).catch(err => {
                     console.log(err)
                 })
             },
-            closePostModal() {
-                this.postComments = []
-                this.showPostModal = false
+            closeHabitModal() {
+                this.habitComments = []
+                this.showHabitModal = false
             }
         },
         filters: {
