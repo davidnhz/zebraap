@@ -21,6 +21,8 @@ const currentUser = auth.currentUser
 // firebase collections
 const usersCollection = db.collection('users')
 const activitiesCollection = db.collection('activities')
+const commentsCollection = db.collection('comments')
+const habitsCollection = db.collection('habits')
 
 
 export {
@@ -29,4 +31,6 @@ export {
     currentUser,
     usersCollection,
     activitiesCollection,
+    commentsCollection,
+    habitsCollection,
 }
