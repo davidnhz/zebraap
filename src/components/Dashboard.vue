@@ -59,7 +59,7 @@
                         <span>{{ fullHabit.createdOn | formatDateFromNow }}</span>
                         <p>{{ fullHabit.description }}</p>
                         <ul>
-                            <li><a>comments {{ fullHabit.comments }}</a></li>
+                            <li><a>logs {{ fullHabit.comments }}</a></li>
                         </ul>
                     </div>
                     <div v-show="habitComments.length" class="comments">
