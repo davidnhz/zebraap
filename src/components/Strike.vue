@@ -3,8 +3,10 @@
     <div
         v-for="(strike, key) in reversedStrikes"
         :key="key"
+        class="box"
+        :class="{ green: strike, red: !strike }"
+        :alt="reversedDateStrikes[key]"
     >
-        {{ strike }}
     </div>
   </div>
 </template>
@@ -20,11 +22,15 @@
         data() {
             return {
                 strikes: [],
+                dateStrikes: []
             }
         },
         computed: {
             reversedStrikes() {
                 return this.strikes.slice().reverse()
+            },
+            reversedDateStrikes() {
+                return this.dateStrikes.slice().reverse()
             }
         },
         methods: {
@@ -53,6 +59,7 @@
                         dateStrikes.forEach(log => {
                             this.strikes.push(logsDate.includes(log))
                         })
+                        this.dateStrikes = dateStrikes
                     }
                 }).catch(err => {
                     console.log(err)
@@ -65,6 +72,23 @@
     }
 </script>
 
-<style>
+<style lang="scss" scoped>
+.strike {
+    display: inline-flex;
+    
+    .box {
+        height: 15px;
+        width: 15px;
+        margin-bottom: 10px;
+        border: 1px solid white;
+    }
 
+    .green {
+        background-color: green;
+    }
+    
+    .red {
+        background-color: red;
+    }
+}
 </style>
