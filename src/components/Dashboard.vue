@@ -19,6 +19,10 @@
                     <div v-for="habit in habits" :key="habit.id" class="post">
                         <span>{{ habit.createdOn | formatDateFromNow }}</span>
                         <p>{{ habit.description | trimLength }}</p>
+                        <Strike
+                            :habit-id="habit.id"
+                            :key="`${habit.id}-${habit.comments}`"
+                        />
                         <ul>
                             <li><a @click="openCommentModal(habit)">logs {{ habit.comments }}</a></li>
                             <li><a @click="viewHabit(habit)">view full habit</a></li>
@@ -79,6 +83,8 @@
     import { mapState } from 'vuex'
     import moment from 'moment'
     const fb = require('../firebaseConfig.js')
+
+    import Strike from '@/components/Strike'
 
     export default {
         data() {
@@ -145,6 +151,8 @@
                     }).then(() => {
                         this.closeCommentModal()
                     })
+
+                    this.$forceUpdate()
                 }).catch(err => {
                     console.log(err)
                 })
@@ -186,6 +194,9 @@
                 if (val.length < 200) { return val }
                 return `${val.substring(0, 200)}...`
             }
+        },
+        components: {
+            Strike
         }
     }
 </script>
