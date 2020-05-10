@@ -17,10 +17,10 @@
             <div class="col2">
                 <div v-if="habits.length">
                     <div v-for="habit in habits" :key="habit.id" class="post">
-                        <span>{{ habit.createdOn | formatDate }}</span>
+                        <span>{{ habit.createdOn | formatDateFromNow }}</span>
                         <p>{{ habit.description | trimLength }}</p>
                         <ul>
-                            <li><a @click="openCommentModal(habit)">comments {{ habit.comments }}</a></li>
+                            <li><a @click="openCommentModal(habit)">logs {{ habit.comments }}</a></li>
                             <li><a @click="viewHabit(habit)">view full habit</a></li>
                         </ul>
                     </div>
@@ -36,10 +36,14 @@
             <div v-if="showCommentModal" class="c-modal">
                 <div class="c-container">
                     <a @click="closeCommentModal">X</a>
-                    <p>add a comment</p>
+                    <p>Add a log</p>
                     <form @submit.prevent>
+                        <div class="flex-container">
+                            <input type="checkbox" id="is-done" v-model="comment.done">
+                            <label for="is-done">Done!</label>
+                        </div>
                         <textarea v-model.trim="comment.content"></textarea>
-                        <button @click="addComment" :disabled="comment.content == ''" class="button">add comment</button>
+                        <button @click="addComment" :disabled="comment.done == false" class="button">add log</button>
                     </form>
                 </div>
             </div>
@@ -52,7 +56,7 @@
                     <a @click="closeHabitModal" class="close">X</a>
                     <div class="post">
                         <h5>{{ fullHabit.userName }}</h5>
-                        <span>{{ fullHabit.createdOn | formatDate }}</span>
+                        <span>{{ fullHabit.createdOn | formatDateFromNow }}</span>
                         <p>{{ fullHabit.description }}</p>
                         <ul>
                             <li><a>comments {{ fullHabit.comments }}</a></li>
@@ -60,9 +64,9 @@
                     </div>
                     <div v-show="habitComments.length" class="comments">
                         <div v-for="comment in habitComments" :key="comment.id" class="comment">
-                            <p>{{ comment.userName }}</p>
-                            <span>{{ comment.createdOn | formatDate }}</span>
+                            <span>{{ comment.userName }} {{ comment.createdOn | formatDate }}</span>
                             <p>{{ comment.content }}</p>
+                            <span>{{ comment.createdOn | formatDateFromNow }}</span>
                         </div>
                     </div>
                 </div>
@@ -86,6 +90,7 @@
                     habitId: '',
                     userId: '',
                     content: '',
+                    done: false,
                     habitComments: 0
                 },
                 showCommentModal: false,
@@ -120,6 +125,7 @@
                 this.comment.habitId = ''
                 this.comment.userId = ''
                 this.comment.content = ''
+                this.comment.done = false
                 this.showCommentModal = false
             },
             addComment() {
@@ -129,6 +135,7 @@
                 fb.commentsCollection.add({
                     createdOn: new Date(),
                     content: this.comment.content,
+                    done: this.comment.done,
                     habitId: habitId,
                     userId: this.currentUser.uid,
                     userName: this.userProfile.name
@@ -166,6 +173,11 @@
         },
         filters: {
             formatDate(val) {
+                if (!val) { return '-' }
+                let date = val.toDate()
+                return moment(date).format("DD.MM.YYYY hh:mm A");
+            },
+            formatDateFromNow(val) {
                 if (!val) { return '-' }
                 let date = val.toDate()
                 return moment(date).fromNow()

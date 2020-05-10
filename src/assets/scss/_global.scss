@@ -200,7 +200,7 @@ form {
         width: 100%;
         padding: 10px;
         font-size: 16px;
-    }
+	}
 }
 // transitions
 .fade-enter-active {
@@ -213,4 +213,11 @@ form {
 .fade-enter,
 .fade-leave-to {
 	opacity: 0;
+}
+
+.flex-container {
+	display: inline-flex;
+}
+#is-done {
+	width: 10px;
 }
