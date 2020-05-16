@@ -4,7 +4,7 @@
         v-for="(strike, key) in reversedStrikes"
         :key="key"
         class="box"
-        :class="{ green: strike, red: !strike }"
+        :class="{ green: strike, yellow: isYellow(reversedStrikes, key), red: !strike && !isYellow(reversedStrikes, key) }"
         :alt="reversedDateStrikes[key]"
     >
     </div>
@@ -34,6 +34,17 @@
             }
         },
         methods: {
+            isYellow(strikes, key) {
+                if (typeof strikes == 'undefined' || !key || typeof strikes[key + 1] == 'undefined') {
+                    return false;
+                }
+
+                if (key > 0 && strikes[key - 1] && strikes[key + 1]) {
+                    return true;
+                }
+                
+                return false;
+            },
             getLogs() {
                 fb.commentsCollection.where('habitId', '==', this.habitId).orderBy('createdOn', "desc").get().then(docs => {
                     let dateStrikes = []
@@ -80,7 +91,7 @@
         height: 15px;
         width: 15px;
         margin-bottom: 10px;
-        border: 1px solid white;
+        border: 1px solid lightgrey;
     }
 
     .green {
@@ -89,6 +100,10 @@
     
     .red {
         background-color: red;
+    }
+
+    .yellow {
+        background-color: yellow;
     }
 }
 </style>
