@@ -26,6 +26,7 @@ export default {
           this.$router.push("/login");
         })
         .catch(err => {
+          // eslint-disable-next-line no-console
           console.log(err);
         });
     }

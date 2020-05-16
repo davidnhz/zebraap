@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 <template>
   <div id="login">
     <transition name="fade">

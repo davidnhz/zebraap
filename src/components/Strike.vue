@@ -1,16 +1,19 @@
 <template>
-  <div class="strike">
-    <div
-      v-for="(strike, key) in reversedStrikes"
-      :key="key"
-      class="box"
-      :class="{
-        green: strike,
-        yellow: isYellow(reversedStrikes, key),
-        red: !strike && !isYellow(reversedStrikes, key)
-      }"
-      :alt="reversedDateStrikes[key]"
-    ></div>
+  <div class="strike-component">
+    <div class="strike-list">
+      <div
+        v-for="(strike, key) in reversedStrikes"
+        :key="key"
+        class="box"
+        :class="{
+          green: strike,
+          yellow: isYellow(reversedStrikes, key),
+          red: !strike && !isYellow(reversedStrikes, key)
+        }"
+        :alt="reversedDateStrikes[key]"
+      ></div>
+    </div>
+    <p v-if="largestStrike()">Max strike: {{ largestStrike() }}</p>
   </div>
 </template>
 
@@ -37,6 +40,23 @@ export default {
     }
   },
   methods: {
+    largestStrike() {
+      let maxStrike = 0;
+      let currentStrike = 0;
+
+      this.strikes.forEach(strike => {
+        if (strike) {
+          currentStrike++;
+        } else {
+          if (currentStrike > maxStrike) {
+            maxStrike = currentStrike;
+          }
+          currentStrike = 0;
+        }
+      });
+
+      return maxStrike || currentStrike;
+    },
     isYellow(strikes, key) {
       if (
         typeof strikes == "undefined" ||
@@ -87,6 +107,7 @@ export default {
           }
         })
         .catch(err => {
+          // eslint-disable-next-line no-console
           console.log(err);
         });
     }
@@ -98,7 +119,13 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.strike {
+.strike-component {
+  p {
+    font-weight: bold;
+  }
+}
+
+.strike-list {
   display: inline-flex;
 
   .box {
