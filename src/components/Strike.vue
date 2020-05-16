@@ -13,7 +13,9 @@
         :alt="reversedDateStrikes[key]"
       ></div>
     </div>
-    <p v-if="largestStrike()">Max strike: {{ largestStrike() }}</p>
+    <p v-if="largestStrike()">
+      Max strike: {{ largestStrike() }} - Current strike: {{ currentStrike() }}
+    </p>
   </div>
 </template>
 
@@ -56,6 +58,19 @@ export default {
       });
 
       return maxStrike || currentStrike;
+    },
+    currentStrike() {
+      let currentStrike = 0;
+
+      for (let i = 0; i < this.strikes.length; i++) {
+        if (this.strikes[i]) {
+          currentStrike++;
+        } else {
+          return currentStrike;
+        }
+      }
+
+      return currentStrike;
     },
     isYellow(strikes, key) {
       if (
