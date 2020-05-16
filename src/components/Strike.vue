@@ -10,7 +10,7 @@
           yellow: isYellow(reversedStrikes, key),
           red: !strike && !isYellow(reversedStrikes, key)
         }"
-        :alt="reversedDateStrikes[key]"
+        v-tooltip.bottom="reversedDateStrikes[key]"
       ></div>
     </div>
     <p v-if="largestStrike()">
