@@ -23,20 +23,23 @@
       <div class="col2">
         <div v-if="habits.length">
           <div v-for="habit in habits" :key="habit.id" class="post">
-            <span>{{ habit.createdOn | formatDateFromNow }}</span>
-            <p>{{ habit.description | trimLength }}</p>
+            <ul>
+              <li>
+                <p>{{ habit.description | trimLength }}</p>
+              </li>
+              <li>
+                <button @click="createLog(habit)" class="btn btn-success">
+                  Done!
+                </button>
+              </li>
+            </ul>
+            <a v-if="habit.comments" @click="viewHabit(habit)"
+              >View logs: {{ habit.comments }}</a
+            >
             <Strike
               :habit-id="habit.id"
               :key="`${habit.id}-${habit.comments}`"
             />
-            <ul>
-              <li>
-                <a @click="openCommentModal(habit)"
-                  >logs {{ habit.comments }}</a
-                >
-              </li>
-              <li><a @click="viewHabit(habit)">view full habit</a></li>
-            </ul>
           </div>
         </div>
         <div v-else>
@@ -50,19 +53,19 @@
       <div v-if="showCommentModal" class="c-modal">
         <div class="c-container">
           <a @click="closeCommentModal">X</a>
-          <p>Add a log</p>
+          <p>Log successfully added!</p>
+          <p>Do you want to add a comment?</p>
           <form @submit.prevent>
-            <div class="flex-container">
-              <input type="checkbox" id="is-done" v-model="comment.done" />
-              <label for="is-done">Done!</label>
-            </div>
             <textarea v-model.trim="comment.content"></textarea>
             <button
               @click="addComment"
-              :disabled="comment.done == false"
+              :disabled="comment.content == ''"
               class="button"
             >
-              add log
+              Save
+            </button>
+            <button @click="closeCommentModal" class="button button-red">
+              Close
             </button>
           </form>
         </div>
@@ -80,7 +83,7 @@
             <p>{{ fullHabit.description }}</p>
             <ul>
               <li>
-                <a>logs {{ fullHabit.comments }}</a>
+                <p>Logs {{ fullHabit.comments }}</p>
               </li>
             </ul>
           </div>
@@ -94,8 +97,8 @@
                 >{{ comment.userName }}
                 {{ comment.createdOn | formatDate }}</span
               >
-              <p>{{ comment.content }}</p>
               <span>{{ comment.createdOn | formatDateFromNow }}</span>
+              <p>{{ comment.content }}</p>
             </div>
           </div>
         </div>
@@ -122,7 +125,8 @@ export default {
         userId: "",
         content: "",
         done: false,
-        habitComments: 0
+        habitComments: 0,
+        id: 0
       },
       showCommentModal: false,
       showHabitModal: false,
@@ -149,6 +153,10 @@ export default {
           console.log(err);
         });
     },
+    createLog(habit) {
+      this.openCommentModal(habit);
+      this.addComment();
+    },
     openCommentModal(habit) {
       this.comment.habitId = habit.id;
       this.comment.userId = habit.userId;
@@ -156,6 +164,7 @@ export default {
       this.showCommentModal = true;
     },
     closeCommentModal() {
+      this.comment.id = 0;
       this.comment.habitId = "";
       this.comment.userId = "";
       this.comment.content = "";
@@ -166,30 +175,39 @@ export default {
       let habitId = this.comment.habitId;
       let habitComments = this.comment.habitComments;
 
-      fb.commentsCollection
-        .add({
-          createdOn: new Date(),
-          content: this.comment.content,
-          done: this.comment.done,
-          habitId: habitId,
-          userId: this.currentUser.uid,
-          userName: this.userProfile.name
-        })
-        .then(doc => {
-          fb.habitsCollection
-            .doc(habitId)
-            .update({
-              comments: habitComments + 1
-            })
-            .then(() => {
-              this.closeCommentModal();
-            });
+      if (!this.comment.id) {
+        fb.commentsCollection
+          .add({
+            createdOn: new Date(),
+            done: this.comment.done,
+            habitId: habitId,
+            userId: this.currentUser.uid,
+            userName: this.userProfile.name
+          })
+          .then(doc => {
+            this.comment.id = doc.id;
 
-          this.$forceUpdate();
-        })
-        .catch(err => {
-          console.log(err);
-        });
+            fb.habitsCollection.doc(habitId).update({
+              comments: habitComments + 1
+            });
+            this.$forceUpdate();
+          })
+          .catch(err => {
+            console.log(err);
+          });
+      } else {
+        fb.commentsCollection
+          .doc(this.comment.id)
+          .update({
+            content: this.comment.content
+          })
+          .then(() => {
+            this.closeCommentModal();
+          })
+          .catch(err => {
+            console.log(err);
+          });
+      }
     },
     viewHabit(habit) {
       fb.commentsCollection
@@ -244,3 +262,9 @@ export default {
   }
 };
 </script>
+
+<style lang="scss">
+.strike-component {
+  margin-top: 20px;
+}
+</style>
