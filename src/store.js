@@ -2,6 +2,8 @@ import Vue from "vue";
 import Vuex from "vuex";
 const fb = require("./firebaseConfig.js");
 
+import moment from "moment";
+
 Vue.use(Vuex);
 
 // handle page reload
@@ -22,7 +24,23 @@ fb.auth.onAuthStateChanged(user => {
         querySnapshot.forEach(doc => {
           let habit = doc.data();
           habit.id = doc.id;
-          habitsArray.push(habit);
+          habit.lastLog = null;
+
+          fb.commentsCollection
+            .where("habitId", "==", habit.id)
+            .where("createdOn", ">=", new Date(moment().format("YYYY-MM-DD")))
+            .limit(1)
+            .get()
+            .then(docs => {
+              docs.forEach(doc => {
+                habit.lastLog = doc.data();
+              });
+            });
+          if (habit.lastLog == null) {
+            habitsArray.unshift(habit);
+          } else {
+            habitsArray.push(habit);
+          }
         });
 
         store.commit("setHabits", habitsArray);
