@@ -35,12 +35,12 @@ fb.auth.onAuthStateChanged(user => {
               docs.forEach(doc => {
                 habit.lastLog = doc.data();
               });
+              if (habit.lastLog == null) {
+                habitsArray.unshift(habit);
+              } else {
+                habitsArray.push(habit);
+              }
             });
-          if (habit.lastLog == null) {
-            habitsArray.unshift(habit);
-          } else {
-            habitsArray.push(habit);
-          }
         });
 
         store.commit("setHabits", habitsArray);
